@@ -1,6 +1,7 @@
 %% AEE480 VARDA Project: O/F Ratio Block
 % Created by: Paul Gray
 % Version date: Feb 9, 2018
+% Requires MSISE90.txt to be in same directory to run properly
 
 %%
 %%% Initial values %%%
