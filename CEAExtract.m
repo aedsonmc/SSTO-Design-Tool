@@ -5,7 +5,7 @@
 clear,clc, close all
 
 %% Extract Data
-
+%These tabulated values all at 140atm chamber pressure
 tabulated = importdata('TabulatedData.csv');
 phi = tabulated.data(:,1);
 OF = tabulated.data(:,2);
@@ -41,6 +41,9 @@ OH = tabulated.data(:,31);
 O2 = tabulated.data(:,32);
 ivacsec = ivac./9.81;
 ispsec = isp./9.81;
+mdot = 750; %kg/s
+F = mdot.*cstar.*CF; %Equation 3-33(?) from Rocket Propulsion Elements
+
 
 %Plot
 figure(1)
@@ -134,4 +137,10 @@ ylabel('Mole Fraction')
 grid on
 legend('Ar','CH4','CO','CO2','H','H2','H2O','NH3','NO','NO2','O','O2','OH')
 
+figure(13)
+plot(phi,F);
+title('Thrust, 750 kg/s')
+xlabel('Equivalence Ratio')
+ylabel('Force')
+grid on
 

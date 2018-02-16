@@ -28,7 +28,7 @@ while itr <= 4900
     count = count + 1;
     itr = itr + 100;
 end
-
+ClCd = CLpost./-CDpost;
 
 %% Plot Data
 AOA = 0:length(CLpost)-1;
@@ -48,10 +48,10 @@ title('Biconvex 1 Subsonic CD')
 grid on
 
 figure(3)
-plot(CDpost,CLpost)
-xlabel('CD')
-ylabel('CL')
-title('Biconvex 1 Subsonic Polar')
+plot(AOA,ClCd)
+xlabel('AOA')
+ylabel('Lift/Drag Ratio')
+title('Biconvex 1 Subsonic Lift Drag Ratio')
 grid on
 
 figure(4)
