@@ -72,9 +72,7 @@ title('Raw CD Data')
 
 CLoutput = [ (flipud(-AOA')) (flipud(-CLpost')) ; (AOA(2:end)') (CLpost(2:end)')];
 CDoutput = [ (flipud(-AOA')) (flipud(-CDpost')) ; (AOA(2:end)') (CDpost(2:end)')];
-
-csvwrite('CLoutput.csv',CLoutput);
-csvwrite('CDoutput.csv',CDoutput);
+csvwrite('CLdata
 
 
 

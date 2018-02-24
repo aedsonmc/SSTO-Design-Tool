@@ -31,7 +31,7 @@ Me_LOX = 3.563; %Mach Number at exit
 Ve_LOX = Me_LOX * a_LOX;
 
 %Air Variables
-OF_Air = 33;
+OF_Air = 22;
 gamma_Air = 1.32; %at nozzle exit
 a_Air = 605.2; %m/s speed of sound
 Me_Air = 3.696; %Mach Number at exit

@@ -18,10 +18,10 @@ clear,clc, close all
 %Initialize Variables
 g = 9.81;   %accleration due to gravity
 m0 = 325000; %Initial Mass
-mdot = 34.49; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
+mdot = 750; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
 F = 1.6794e6; %maximum mass flow-based thrust
 simTime = 60; %Simulation Time in Seconds
-timestep = 0.01; %Simulation Time Step
+timestep = 0.1; %Simulation Time Step
 totalIterations = simTime/timestep; %Number of Iterations
 A = 100; %m^2 reference area
 s = zeros(totalIterations,1); %initialize solution matricies
@@ -47,50 +47,25 @@ CD = @(a) interp1(CDdata(:,1),CDdata(:,2),a);
 %Iterate
 for i = 2:totalIterations
    t = i*timestep; 
-   s(i) = ((F/m(i-1)*cosd(psi(i-1)-theta(i-1))-(CD(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1))))*((t.^2)/2);
+   s(i) = ((F/m(i-1)*cosd(psi(i-1)-theta(i-1))-(CD(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1))))*(t.^2/2);
    sdot(i) = ((F/m(i-1)*cosd(psi(i-1)-theta(i-1))-(CD(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1))))*(t);
    sdotdot(i) = (F/m(i-1)*cosd(psi(i-1)-theta(i-1))-(CD(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1)));
-   theta(i) = ((F/m(i-1)*sind(psi(i-1)-theta(i-1))+(CL(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1))))*((t.^2)/2);
-   thetadot(i) = ((F/m(i-1)*sind(psi(i-1)-theta(i-1))+(CL(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1))))*(t);
-   thetadotdot(i) = (F/m(i-1)*sind(psi(i-1)-theta(i-1))+(CL(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1)));
-   x(i) = x(i-1) + s(i)*timestep*cosd(theta(i));
-   if sdot < 100
-       y(i) = 0;
-   else
-       y(i) = y(i-1) + s(i)*timestep*sind(theta(i));
-   end
-
-   m(i) = m(i-1) - mdot*timestep;
-   if m(i-1) < 40000
-       break 
-   end
+   theta(i) = ((F/m(i-1)*sind(psi(i-1)-theta(i-1))-(CL(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1))))*(t.^2/2);
+   thetadot(i) = ((F/m(i-1)*sind(psi(i-1)-theta(i-1))-(CL(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1))))*(t);
+   thetadotdot(i) = (F/m(i-1)*sind(psi(i-1)-theta(i-1))-(CL(alpha(i-1))/(2*m(i-1)))*rho(y(i-1))*sdot(i-1).^2*A-g*sin(theta(i-1)));
+   x(i) = x(i-1) + s(i)*cosd(theta(i));
+   y(i) = y(i-1) + s(i)*sind(theta(i));
+   m(i) = m(i-1) - mdot;
    if sdot(i) < 100
-       alpha(i) = 5;
-       psi(i) = 5;
+       alpha(i) = 0;
+       psi(i) = 0;
    else
-       alpha(i) = 15;
-       psi(i) = 15;
+       alpha(i) = 30;
+       psi(i) = 30;
        
    end
    
 end
 
-%% plot stuff
-tplot = linspace(0,t,totalIterations);
 
-figure(1)
-plot(tplot,x)
-title('X position vs Time')
-
-figure(2)
-plot(tplot,y)
-title('Y position vs Time')
-
-figure(3)
-plot(tplot,s,tplot,sdot,tplot,sdotdot)
-title('S')
-
-figure(4)
-plot(tplot,theta,tplot,thetadot,tplot,thetadotdot)
-title('Theta')
 
