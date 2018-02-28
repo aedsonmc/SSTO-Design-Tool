@@ -20,10 +20,10 @@ g = 9.81;   %accleration due to gravity
 m0 = 325000; %Initial Mass
 mdot = 34.49; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
 F = 1.6794e6; %maximum mass flow-based thrust
-simTime = 60; %Simulation Time in Seconds
+simTime = 100; %Simulation Time in Seconds
 timestep = 0.1; %Simulation Time Step
 totalIterations = simTime/timestep; %Number of Iterations
-A = 250; %m^2 reference area
+A = 650; %m^2 reference area
 x = zeros(totalIterations,1);
 xdot = zeros(totalIterations,1);
 xdotdot = zeros(totalIterations,1);
@@ -49,23 +49,25 @@ for i = 2:totalIterations
    xdotdot(i) = (F*cosd(phi(i-1))-CL(alpha(i-1))*(0.5*rho(y(i-1))*magu(i-1).^2*A)*sind(phi(i-1))-CD(alpha(i-1))*(0.5*rho(y(i-1))*magu(i-1).^2*A)*cosd(theta(i-1)))/m(i-1);
    x(i) = xdotdot(i)*((t.^2)/2);
    xdot(i) = xdotdot(i)*(t);
+   %Insert equation for determining phi(i). Will likely be an optimization
+   %problem based on lift.
    theta(i) = atand(ydot(i)/xdot(i));
    m(i) = m(i-1) - mdot*timestep;
    magu(i) = sqrt(xdot(i).^2+ydot(i).^2);
    magacc(i) = sqrt(xdotdot(i).^2 + ydotdot(i).^2);
    
-%    if ydot(i-1) <= 100
-%        phi(i) = 0;
-%        ydot(i) = ydot(i-1);
-%        y(i) = y(i-1);
+
+%    if (phi(i-1) <= 5)
+%         phi(i) = phi(i-1) + 0.025;
+%    else
+%         phi(i) = phi(i-1);
 %    end
-   if (phi(i-1) <= 30)
-        phi(i) = phi(i-1) + 0.5;
-   else
-        phi(i) = phi(i-1);
-   end
-   
-   alpha(i) = phi(i) - atand(ydot(i)/xdot(i));
+% %    if magu(i-1) <= 100
+% %        phi(i) = 0;
+% %        ydot(i) = ydot(i-1);
+% %        y(i) = y(i-1);
+% %    end
+%    alpha(i) = phi(i) - atand(ydot(i)/xdot(i));
 end
 
 %% plot stuff
