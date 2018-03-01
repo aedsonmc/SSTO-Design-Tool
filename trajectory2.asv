@@ -46,7 +46,7 @@ load('CDdata5mNacelles.mat')
 load('CLdata5mNacelles.mat')
 % dentemp = importdata('densityProfile.csv',','); %import density profile
 % rho = @(a) interp1(dentemp(:,1),dentemp(:,2),a,'nearest');
-click = 0;
+
 %Iterate
 for i = 2:totalIterations
    t = i*timestep;
@@ -73,7 +73,6 @@ for i = 2:totalIterations
    magu(i) = sqrt(xdot(i).^2+ydot(i).^2);
    magacc(i) = sqrt(xdotdot(i).^2 + ydotdot(i).^2);
    Q(i) = 0.5*rhoi*magu(i).^2;
-   
    %takeoff values
    if magu(i) < 100
        phi(i) = 5;
@@ -85,16 +84,15 @@ for i = 2:totalIterations
    %Climb Section
    if magu(i) >= 100
       phi(i) = 10;
-       if (y(i) >= 12500 && click == 0)
+       if y(i) >= 12500
            phi(i) = 2;
            phidotdot(i) = 0;
        end
-       if (magu(i) >= 6000 && click == 0)
+       if magu(i) >= 6000
            phi(i) = 15;
            F = 2.75e6;
-           click = 1;
        end
-       if (y(i) >= 80000 && click == 1)
+       if y(i) >= 80000
            F = 0;
            m(i) = m(i-1);
            
@@ -105,7 +103,7 @@ for i = 2:totalIterations
 %            m(i) = m(i-1) - (((mdot*timestep) + 22*mdot*timestep)*0.75);
 %        end
    end
-   if y(i) >= 1.3e5
+   if y(i) > 1.3e5
        m(i) = m(i-1);
        F = 0;
    end
