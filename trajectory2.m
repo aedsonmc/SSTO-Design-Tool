@@ -20,7 +20,7 @@ g = 9.81;   %accleration due to gravity
 m0 = 325000; %Initial Mass
 mdot = 34.49; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
 F = 1.6794e6; %maximum mass flow-based thrust
-simTime = 1400; %Simulation Time in Seconds
+simTime = 2500; %Simulation Time in Seconds
 timestep = 0.5; %Simulation Time Step
 totalIterations = simTime/timestep; %Number of Iterations
 A = 685.597; %m^2 reference area
@@ -89,18 +89,23 @@ for i = 2:totalIterations
            phidotdot(i) = 0;
        end
        if magu(i) >= 6000
-           phi(i) = 20;
+           phi(i) = 15;
+           F = 2.75e6;
        end
        if y(i) >= 80000
-           phi(i) = 10;
            F = 0;
            m(i) = m(i-1);
        end
-       if y(i) >= 1.2e5
-           phi(i) = 0.5;
-           F = 1.6794e6;
-           m(i) = m(i-1) - (mdot+22*mdot)*timestep;
+       if y(i) >= 1.25e5
+           phi(i) = 1;
+           F = 2.75e6.*0.75;
+           m(i) = m(i-1) - (((mdot*timestep) + 22*mdot*timestep)*0.75);
        end
+   end
+   if y(i) > 1.3e5
+       m(i) = m(i-1);
+       F = 0;
+       phi(i) = 0.5;
    end
    
    alpha(i) = phi(i) - atand(ydot(i)/xdot(i));
@@ -185,3 +190,9 @@ plot(y/1000,Q)
 title('Dynamic Pressure vs. Altitude')
 xlabel('Altitude')
 ylabel('Dynamic Pressure')
+
+figure(11)
+plot(tplot,magacc/g)
+title('Accerlation Normalized to go')
+xlabel('Time')
+ylabel('Accelerations (g)')
