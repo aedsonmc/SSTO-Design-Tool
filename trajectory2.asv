@@ -20,7 +20,7 @@ g = 9.81;   %accleration due to gravity
 m0 = 325000; %Initial Mass
 mdot = 34.49; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
 F = 1.6794e6; %maximum mass flow-based thrust
-simTime = 1400; %Simulation Time in Seconds
+simTime = 2500; %Simulation Time in Seconds
 timestep = 0.5; %Simulation Time Step
 totalIterations = simTime/timestep; %Number of Iterations
 A = 685.597; %m^2 reference area
@@ -83,23 +83,26 @@ for i = 2:totalIterations
 
    %Climb Section
    if magu(i) >= 100
-      phi(i) = 10;
-       if y(i) >= 12500
+       if phi(i-1) < 10
+           if phi(i-1) < 5
+               phidotdot(i) = phidotdot(i-1) + 0.25*timestep;
+           end
+           if phi(i-1) >= 5
+               phidotdot(i) = phidotdot(i-1) + (-0.25)*timestep;
+           end
+           phi(i) = phi(i-1) + phidotdot(i) * timestep;
+       end
+       if phi(i-1) >= 10
+           phi(i) = 10;
+           phidot(i) = 0;
+           phidotdot(i) = 0;
+       end
+       if y(i) >= 20000
            phi(i) = 2;
            phidotdot(i) = 0;
        end
-       if magu(i) >= 6000
-           phi(i) = 20;
-       end
-       if y(i) >= 80000
-           phi(i) = 10;
-           F = 0;
-           m(i) = m(i-1);
-       end
-       if y(i) >= 1.2e5
-           phi(i) = 0.5;
-           F = 1.6794e6;
-           m(i) = m(i-1) - (mdot+22*mdot)*timestep;
+       if y(i) >= 30000
+           phidotdot(i) = phidotdot(i-1) + 0.25;
        end
    end
    
@@ -124,7 +127,6 @@ end
 
 %% plot stuff
 tplot = linspace(0,t,totalIterations);
-mach = magu./340;
 
 figure(1)
 plot(tplot,xdot)
@@ -145,42 +147,36 @@ xlabel('Velocity')
 ylabel('Altitude (km)')
 
 figure(4)
-plot(mach,y/1000)
-title('Mach vs Altitude (normalized to SL)')
-xlabel('Mach')
-ylabel('Altitude')
-
-figure(5)
 plot(tplot,m)
 title('Mass vs Time')
 xlabel('Time')
 ylabel('Mass (kg)')
 
-figure(6)
+figure(5)
 plot(tplot,y/1000)
 title('Altitude vs Time')
 xlabel('Time')
 ylabel('Altitude (km)')
 
-figure(7)
+figure(6)
 plot(tplot,magu)
 title('Velocity vs Time')
 xlabel('Time')
 ylabel('Velocity (m/s)')
 
-figure(8)
+figure(7)
 plot(tplot,phi)
 title('Phi vs Time')
 xlabel('Time')
 ylabel('Phi (deg)')
 
-figure(9)
+figure(8)
 plot(tplot,Q)
 title('Dynamic Pressure vs Time')
 xlabel('Time')
 ylabel('Dynamic Pressure')
 
-figure(10)
+figure(9)
 plot(y/1000,Q)
 title('Dynamic Pressure vs. Altitude')
 xlabel('Altitude')

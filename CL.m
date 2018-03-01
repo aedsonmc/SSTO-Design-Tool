@@ -1,9 +1,9 @@
-function output = CL(alpha)
-load('CLdata.mat');
-if alpha < -41
-    alpha = -41;
+function output = CL(alpha,CLoutput)
+%load('CLdata5mNacelles.mat');
+if alpha < -49
+    alpha = -49;
 end
-if alpha > 41
-    alpha = 41;
+if alpha > 49
+    alpha = 49;
 end
-output = interp1(CLdata(:,1),CLdata(:,2),alpha,'nearest');
+output = interp1(CLoutput(:,1),CLoutput(:,2),alpha,'nearest');

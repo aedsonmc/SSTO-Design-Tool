@@ -18,7 +18,7 @@ totalCL = 0;
 totalCD = 0;
 count = 1;
 for i = 1:50
-   for j = count:count+50
+   for j = 1:50
       totalCL = totalCL + CLpre(j);
       totalCD = totalCD + CDpre(j);
    end
@@ -28,11 +28,6 @@ for i = 1:50
    totalCD = 0;
    CLpost(i) = avgCL;
    CDpost(i) = avgCD;
-   count = count + 50;
-   if count == 2451
-       count = 2450;
-   end
-   
 end
 ClCd = CLpost./-CDpost;
 
