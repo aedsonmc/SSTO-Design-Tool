@@ -20,7 +20,7 @@ g = 9.81;   %accleration due to gravity
 m0 = 325000; %Initial Mass
 mdot = 34.49; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
 F = 1.6794e6; %maximum mass flow-based thrust
-simTime = 2500; %Simulation Time in Seconds
+simTime = 3600; %Simulation Time in Seconds
 timestep = 0.5; %Simulation Time Step
 totalIterations = simTime/timestep; %Number of Iterations
 A = 685.597; %m^2 reference area
@@ -75,7 +75,7 @@ for i = 2:totalIterations
    Q(i) = 0.5*rhoi*magu(i).^2;
    
    %takeoff values
-   if magu(i) < 100
+   if magu(i) < 125
        phi(i) = 5;
        ydotdot(i) = 0;
        ydot(i) = 0;
@@ -83,7 +83,7 @@ for i = 2:totalIterations
    end
 
    %Climb Section
-   if magu(i) >= 100
+   if magu(i) >= 125
       phi(i) = 10;
        if (y(i) >= 12500 && click == 0)
            phi(i) = 2;
@@ -109,7 +109,18 @@ for i = 2:totalIterations
        m(i) = m(i-1);
        F = 0;
    end
-   
+   if magu(i) < 7796
+       if y(i) >= 3.99e5
+           F = 1e6;
+           m(i) = m(i-1) - mdot*0.3*timestep - 22*mdot*0.3*timestep;
+           phi(i) = 0;
+       end
+       if y(i) >= 4e5
+           F = 0;
+           m(i) = m(i-1);
+           phi(i) = 0;
+       end
+   end
    alpha(i) = phi(i) - atand(ydot(i)/xdot(i));
 end
 
