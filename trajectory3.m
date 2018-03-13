@@ -22,7 +22,7 @@ g = 9.81;   %accleration due to gravity
 m0 = 325000; %Initial Mass
 mdot = 34.49; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
 F = 1.6794e6; %maximum mass flow-based thrust
-simTime = 2400; %Simulation Time in Seconds
+simTime = 600; %Simulation Time in Seconds
 timestep = 0.5; %Simulation Time Step
 totalIterations = simTime/timestep; %Number of Iterations
 A = 685.597; %m^2 reference area
@@ -42,17 +42,10 @@ m = ones(totalIterations,1,'gpuArray');
 magu = zeros(totalIterations,1,'gpuArray');
 magacc = zeros(totalIterations,1,'gpuArray');
 Q = zeros(totalIterations,1,'gpuArray');
-tempi = zeros(totalIterations,1,'gpuArray');
-pressure = zeros(totalIterations,1,'gpuArray');
-pressure(1) = 101325;
-tempi(1) = 288.19;
-alpha(1) = 5;
-R = 287; %J/kg-K
 m(1) = m0;
 load('denprofile.mat') %to reduce call time on rho function
 load('CDdata5mNacelles.mat')
 load('CLdata5mNacelles.mat')
-load('temp.mat')
 % dentemp = importdata('densityProfile.csv',','); %import density profile
 % rho = @(a) interp1(dentemp(:,1),dentemp(:,2),a,'nearest');
 click = 0;
@@ -62,14 +55,17 @@ for i = 2:totalIterations
    rhoi = rho(y(i-1),dentemp(:,:));
    CLi = CL(alpha(i-1),CLoutput(:,:));
    CDi = CD(alpha(i-1),CDoutput(:,:));
-   tempi(i) = templookup(y(i-1),temp);
-   pressure(i) = rhoi * R * tempi(i-1);
-   ydotdot(i) = (F*sind(phi(i-1))+CLi*(0.5*rhoi*magu(i-1).^2*A)*cosd(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*sind(theta(i-1))-m(i-1)*g)/m(i-1);
+   forcetail = Ft(y(i-1),magu(i-1),phi(i-1));
+   ydotdot(i) = (F*sind(phi(i-1))+CLi*(0.5*rhoi*magu(i-1).^2*A)*cosd(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*sind(theta(i-1))-m(i-1)*g-forcetail*cosd(phi(i-1)))/m(i-1);
    ydot(i) = ydot(i-1) + ydotdot(i)*(timestep);
    y(i) = y(i-1) + ydot(i)*(timestep);
-   xdotdot(i) = (F*cosd(phi(i-1))-CLi*(0.5*rhoi*magu(i-1).^2*A)*sind(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*cosd(theta(i-1)))/m(i-1);
+   xdotdot(i) = (F*cosd(phi(i-1))-CLi*(0.5*rhoi*magu(i-1).^2*A)*sind(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*cosd(theta(i-1))+forcetail*sind(phi(i-1)))/m(i-1);
    xdot(i) = xdot(i-1) + xdotdot(i)*(timestep);
    x(i) = x(i-1) + xdot(i)*(timestep);
+   phidotdot(i) = (forcetail * 28) / 9e8;
+   phidot(i) = phidot(i-1) + phidotdot(i-1)*timestep;
+   phi(i) = phi(i-1) + phidot(i-1)*timestep;
+   
    
    theta(i) = atand(ydot(i)/xdot(i));
    if y(i) < 30000
@@ -87,46 +83,46 @@ for i = 2:totalIterations
    
    %takeoff values
    if magu(i) < 125
-       phi(i) = 5;
+%        phi(i) = 5;
        ydotdot(i) = 0;
        ydot(i) = 0;
        y(i) = 0;
    end
-
-   %Climb Section
-   if magu(i) >= 125
-      phi(i) = 10;
-       if (y(i) >= 12500 && click == 0)
-           phi(i) = 2;
-           phidotdot(i) = 0;
-       end
-       if (magu(i) >= 6000 && click == 0)
-           phi(i) = 15;
-           F = 2.75e6;
-           click = 1;
-       end
-       if (y(i) >= 80000 && click == 1)
-           F = 0;
-           m(i) = m(i-1);
-           
-       end
-   end
-   if y(i) >= 1.3e5
-       m(i) = m(i-1);
-       F = 0;
-   end
-   if magu(i) < 7796
-       if y(i) >= 3.99e5
-           F = 3e5;
-           m(i) = m(i-1) - mdot*0.1*timestep - 22*mdot*0.1*timestep;
-           phi(i) = -0.5;
-       end
-       if y(i) >= 4e5
-           F = 0;
-           m(i) = m(i-1);
-           phi(i) = 0;
-       end
-   end
+% 
+%    %Climb Section
+%    if magu(i) >= 125
+%       phi(i) = 10;
+%        if (y(i) >= 12500 && click == 0)
+%            phi(i) = 2;
+%            phidotdot(i) = 0;
+%        end
+%        if (magu(i) >= 6000 && click == 0)
+%            phi(i) = 15;
+%            F = 2.75e6;
+%            click = 1;
+%        end
+%        if (y(i) >= 80000 && click == 1)
+%            F = 0;
+%            m(i) = m(i-1);
+%            
+%        end
+%    end
+%    if y(i) >= 1.3e5
+%        m(i) = m(i-1);
+%        F = 0;
+%    end
+%    if magu(i) < 7796
+%        if y(i) >= 3.99e5
+%            F = 3e5;
+%            m(i) = m(i-1) - mdot*0.1*timestep - 22*mdot*0.1*timestep;
+%            phi(i) = -0.5;
+%        end
+%        if y(i) >= 4e5
+%            F = 0;
+%            m(i) = m(i-1);
+%            phi(i) = 0;
+%        end
+%    end
    alpha(i) = phi(i) - atand(ydot(i)/xdot(i));
 end
 
@@ -211,18 +207,3 @@ plot(tplot,mach)
 title('Mach Number vs Time')
 xlabel('Time')
 ylabel('Mach Number')
-
-%% CFD Output
-%This is where the table of values for input into a transient simulation is
-%assembled.
-alpha = gather(alpha);
-mach = gather(mach);
-tempi = gather(tempi);
-cfdTable(:,1) = tplot';
-cfdTable(:,2) = zeros(length(cfdTable),1); %X-Flow Direction
-cfdTable(:,3) = -1*sind(alpha); %Y-Flow Direction
-cfdTable(:,4) = cosd(alpha); %Z-Flow Direction
-cfdTable(:,5) = mach; %Actual Mach Number
-cfdTable(:,6) = tempi; %static temperature
-
-csvwrite('cfdTable.csv',cfdTable);

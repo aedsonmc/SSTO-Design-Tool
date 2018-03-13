@@ -42,12 +42,6 @@ m = ones(totalIterations,1,'gpuArray');
 magu = zeros(totalIterations,1,'gpuArray');
 magacc = zeros(totalIterations,1,'gpuArray');
 Q = zeros(totalIterations,1,'gpuArray');
-tempi = zeros(totalIterations,1,'gpuArray');
-pressure = zeros(totalIterations,1,'gpuArray');
-pressure(1) = 101325;
-tempi(1) = 288.19;
-alpha(1) = 5;
-R = 287; %J/kg-K
 m(1) = m0;
 load('denprofile.mat') %to reduce call time on rho function
 load('CDdata5mNacelles.mat')
@@ -62,8 +56,6 @@ for i = 2:totalIterations
    rhoi = rho(y(i-1),dentemp(:,:));
    CLi = CL(alpha(i-1),CLoutput(:,:));
    CDi = CD(alpha(i-1),CDoutput(:,:));
-   tempi(i) = templookup(y(i-1),temp);
-   pressure(i) = rhoi * R * tempi(i-1);
    ydotdot(i) = (F*sind(phi(i-1))+CLi*(0.5*rhoi*magu(i-1).^2*A)*cosd(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*sind(theta(i-1))-m(i-1)*g)/m(i-1);
    ydot(i) = ydot(i-1) + ydotdot(i)*(timestep);
    y(i) = y(i-1) + ydot(i)*(timestep);
@@ -215,14 +207,6 @@ ylabel('Mach Number')
 %% CFD Output
 %This is where the table of values for input into a transient simulation is
 %assembled.
-alpha = gather(alpha);
-mach = gather(mach);
-tempi = gather(tempi);
-cfdTable(:,1) = tplot';
-cfdTable(:,2) = zeros(length(cfdTable),1); %X-Flow Direction
-cfdTable(:,3) = -1*sind(alpha); %Y-Flow Direction
-cfdTable(:,4) = cosd(alpha); %Z-Flow Direction
-cfdTable(:,5) = mach; %Actual Mach Number
-cfdTable(:,6) = tempi; %static temperature
 
-csvwrite('cfdTable.csv',cfdTable);
+
+
