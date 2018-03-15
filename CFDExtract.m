@@ -4,8 +4,8 @@
 
 clear,clc, close all
 %% Import Data
-CL = importdata('5m_nacellesCL.csv');
-CD = importdata('5m_nacellesCD.csv');
+CL = importdata('no_nacellesCL.csv');
+CD = importdata('no_nacellesCD.csv');
 CLpre = CL.data(:,2);
 CLtime = CL.data(:,1);
 CDpre = CD.data(:,2);
@@ -79,8 +79,10 @@ title('Raw CD Data')
 CLoutput = [ (flipud(-AOA')) (flipud(-CLpost')) ; (AOA(2:end)') (CLpost(2:end)')];
 CDoutput = [ (flipud(-AOA')) (flipud(-CDpost')) ; (AOA(2:end)') (CDpost(2:end)')];
 
-csvwrite('CLoutput.csv',CLoutput);
-csvwrite('CDoutput.csv',CDoutput);
+save('CL_no_nacelles.mat','CLoutput')
+save('CD_no_nacelles.mat','CDoutput')
+% csvwrite('CLoutput.csv',CLoutput);
+% csvwrite('CDoutput.csv',CDoutput);
 
 
 

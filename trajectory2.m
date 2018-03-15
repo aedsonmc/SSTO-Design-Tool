@@ -22,7 +22,7 @@ g = 9.81;   %accleration due to gravity
 m0 = 325000; %Initial Mass
 mdot = 34.49; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
 F = 1.6794e6; %maximum mass flow-based thrust
-simTime = 2400; %Simulation Time in Seconds
+simTime = 1600; %Simulation Time in Seconds
 timestep = 0.5; %Simulation Time Step
 totalIterations = simTime/timestep; %Number of Iterations
 A = 685.597; %m^2 reference area
@@ -50,8 +50,8 @@ alpha(1) = 5;
 R = 287; %J/kg-K
 m(1) = m0;
 load('denprofile.mat') %to reduce call time on rho function
-load('CDdata5mNacelles.mat')
-load('CLdata5mNacelles.mat')
+load('CD_no_nacelles.mat')
+load('CL_no_nacelles.mat')
 load('temp.mat')
 % dentemp = importdata('densityProfile.csv',','); %import density profile
 % rho = @(a) interp1(dentemp(:,1),dentemp(:,2),a,'nearest');
@@ -183,10 +183,11 @@ xlabel('Time')
 ylabel('Velocity (m/s)')
 
 figure(9)
-plot(tplot,phi)
+plot(tplot,phi,tplot,alpha)
 title('Phi vs Time')
 xlabel('Time')
-ylabel('Phi (deg)')
+ylabel('Angle')
+legend('Phi','Alpha')
 
 figure(10)
 plot(tplot,Q)
@@ -218,11 +219,15 @@ ylabel('Mach Number')
 alpha = gather(alpha);
 mach = gather(mach);
 tempi = gather(tempi);
+pressure = gather(pressure);
+y = gather(y);
 cfdTable(:,1) = tplot';
 cfdTable(:,2) = zeros(length(cfdTable),1); %X-Flow Direction
-cfdTable(:,3) = -1*sind(alpha); %Y-Flow Direction
-cfdTable(:,4) = cosd(alpha); %Z-Flow Direction
+cfdTable(:,3) = sind(alpha); %Y-Flow Direction
+cfdTable(:,4) = -1.*cosd(alpha); %Z-Flow Direction
 cfdTable(:,5) = mach; %Actual Mach Number
 cfdTable(:,6) = tempi; %static temperature
+cfdTable(:,7) = pressure - 101325; %static temperature
+cfdTable(:,8) = y/1000; %Altitude in km
 
 csvwrite('cfdTable.csv',cfdTable);

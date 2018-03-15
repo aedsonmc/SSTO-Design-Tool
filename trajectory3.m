@@ -1,6 +1,6 @@
 %% AEE480 VARDA Project Trajectory Solver
 % Created by: Alex Edson
-% Version date: Mar 2, 2018
+% Version date: Mar 12, 2018
 % Values allowing calculation of OF ratios and thrust Obtained via CEARun,
 % a NASA program.
 
@@ -55,7 +55,7 @@ for i = 2:totalIterations
    rhoi = rho(y(i-1),dentemp(:,:));
    CLi = CL(alpha(i-1),CLoutput(:,:));
    CDi = CD(alpha(i-1),CDoutput(:,:));
-   forcetail = Ft(y(i-1),magu(i-1),phi(i-1));
+%    forcetail = Ft(y(i-1),magu(i-1),phi(i-1));
    ydotdot(i) = (F*sind(phi(i-1))+CLi*(0.5*rhoi*magu(i-1).^2*A)*cosd(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*sind(theta(i-1))-m(i-1)*g-forcetail*cosd(phi(i-1)))/m(i-1);
    ydot(i) = ydot(i-1) + ydotdot(i)*(timestep);
    y(i) = y(i-1) + ydot(i)*(timestep);
@@ -83,7 +83,7 @@ for i = 2:totalIterations
    
    %takeoff values
    if magu(i) < 125
-%        phi(i) = 5;
+       phi(i) = 5;
        ydotdot(i) = 0;
        ydot(i) = 0;
        y(i) = 0;
