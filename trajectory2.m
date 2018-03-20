@@ -47,6 +47,7 @@ pressure = zeros(totalIterations,1,'gpuArray');
 pressure(1) = 101325;
 tempi(1) = 288.19;
 alpha(1) = 5;
+gamma = 1.4;
 R = 287; %J/kg-K
 m(1) = m0;
 load('denprofile.mat') %to reduce call time on rho function
@@ -133,6 +134,7 @@ end
 %% plot stuff
 tplot = linspace(0,t,totalIterations);
 mach = magu./340;
+machactual = magu./sqrt(gamma.*R*tempi);
 
 figure(1)
 plot(tplot,xdot)
@@ -212,6 +214,12 @@ plot(tplot,mach)
 title('Mach Number vs Time')
 xlabel('Time')
 ylabel('Mach Number')
+
+figure(14)
+plot(tplot,machactual)
+title('Actual Mach')
+xlabel('Time')
+ylabel('Mach')
 
 %% CFD Output
 %This is where the table of values for input into a transient simulation is

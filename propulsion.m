@@ -23,6 +23,7 @@
 %
 
 %% Main
+clear,clc,close all
 %LOX Variables
 OF_LOX = 5;
 gamma_LOX = 1.25; %At nozzle exit

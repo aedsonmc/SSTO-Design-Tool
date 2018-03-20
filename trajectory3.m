@@ -22,7 +22,7 @@ g = 9.81;   %accleration due to gravity
 m0 = 325000; %Initial Mass
 mdot = 34.49; %mass flow for thrust. Will add throttleable settings based on chamber pressure and O/F ratios. For now thrust is constant
 F = 1.6794e6; %maximum mass flow-based thrust
-simTime = 600; %Simulation Time in Seconds
+simTime = 800; %Simulation Time in Seconds
 timestep = 0.5; %Simulation Time Step
 totalIterations = simTime/timestep; %Number of Iterations
 A = 685.597; %m^2 reference area
@@ -42,38 +42,61 @@ m = ones(totalIterations,1,'gpuArray');
 magu = zeros(totalIterations,1,'gpuArray');
 magacc = zeros(totalIterations,1,'gpuArray');
 Q = zeros(totalIterations,1,'gpuArray');
+err = zeros(totalIterations,1,'gpuArray');
+forcetail = zeros(totalIterations,1,'gpuArray');
 m(1) = m0;
 load('denprofile.mat') %to reduce call time on rho function
-load('CDdata5mNacelles.mat')
-load('CLdata5mNacelles.mat')
+load('CD_no_nacelles.mat')
+load('CL_no_nacelles.mat')
 % dentemp = importdata('densityProfile.csv',','); %import density profile
 % rho = @(a) interp1(dentemp(:,1),dentemp(:,2),a,'nearest');
 click = 0;
+K = 1;
 %Iterate
 for i = 2:totalIterations
    t = i*timestep;
    rhoi = rho(y(i-1),dentemp(:,:));
    CLi = CL(alpha(i-1),CLoutput(:,:));
    CDi = CD(alpha(i-1),CDoutput(:,:));
-%    forcetail = Ft(y(i-1),magu(i-1),phi(i-1));
-   ydotdot(i) = (F*sind(phi(i-1))+CLi*(0.5*rhoi*magu(i-1).^2*A)*cosd(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*sind(theta(i-1))-m(i-1)*g-forcetail*cosd(phi(i-1)))/m(i-1);
+   ydotdot(i) = (F*sind(phi(i-1))+CLi*(0.5*rhoi*magu(i-1).^2*A)*cosd(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*sind(theta(i-1))-m(i-1)*g-forcetail(i-1)*cosd(phi(i-1)))/m(i-1);
    ydot(i) = ydot(i-1) + ydotdot(i)*(timestep);
    y(i) = y(i-1) + ydot(i)*(timestep);
-   xdotdot(i) = (F*cosd(phi(i-1))-CLi*(0.5*rhoi*magu(i-1).^2*A)*sind(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*cosd(theta(i-1))+forcetail*sind(phi(i-1)))/m(i-1);
+   xdotdot(i) = (F*cosd(phi(i-1))-CLi*(0.5*rhoi*magu(i-1).^2*A)*sind(phi(i-1))-CDi*(0.5*rhoi*magu(i-1).^2*A)*cosd(theta(i-1))+forcetail(i-1)*sind(phi(i-1)))/m(i-1);
    xdot(i) = xdot(i-1) + xdotdot(i)*(timestep);
    x(i) = x(i-1) + xdot(i)*(timestep);
-   phidotdot(i) = (forcetail * 28) / 9e8;
+   %controller
+   if magu(i-1) <= 125
+        phitgt = 5;
+   elseif magu(i-1) > 125
+        phitgt = 15;
+   end
+   if y(i) > 5000
+       phitgt = 2;
+       F = 2.75e6;
+   end
+   if y(i) > 50000
+       phitgt = 60;
+   end
+   if y(i) > 1.3e5
+       phitgt = 5;
+       F = 0;
+   end
+   err(i) = err(i-1) + (phitgt - phi(i-1));
+   forcetail(i) = K*err(i);
+   phidotdot(i) = (forcetail(i) * 28) / 9e7;
    phidot(i) = phidot(i-1) + phidotdot(i-1)*timestep;
    phi(i) = phi(i-1) + phidot(i-1)*timestep;
    
    
    theta(i) = atand(ydot(i)/xdot(i));
-   if y(i) < 30000
+   if y(i) < 50000
         m(i) = m(i-1) - mdot*timestep;
-   else
+   elseif y(i) >= 50000
         m(i) = m(i-1) - mdot*timestep - 22*mdot*timestep;
+   elseif F == 0
+       m(i) = m(i-1);
    end
-   if m(i) < 32500
+   if m(i) < 32500  %runs out of fuel
        m(i) = m(i-1);
        F = 0;
    end
@@ -81,7 +104,7 @@ for i = 2:totalIterations
    magacc(i) = sqrt(xdotdot(i).^2 + ydotdot(i).^2);
    Q(i) = 0.5*rhoi*magu(i).^2;
    
-   %takeoff values
+   %takeoff fixing
    if magu(i) < 125
        phi(i) = 5;
        ydotdot(i) = 0;
@@ -207,3 +230,9 @@ plot(tplot,mach)
 title('Mach Number vs Time')
 xlabel('Time')
 ylabel('Mach Number')
+
+figure(14)
+plot(tplot,forcetail)
+title('Tail Force')
+xlabel('Time')
+ylabel('Force')
