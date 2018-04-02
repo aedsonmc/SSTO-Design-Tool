@@ -140,87 +140,100 @@ figure(1)
 plot(tplot,xdot)
 title('X-Component')
 xlabel('Time (s)')
-ylabel('Velocity')
+ylabel('Velocity (m/s)')
+grid on
 
 figure(2)
 plot(tplot,ydot)
 title('Y-Component')
 xlabel('Time (s)')
-ylabel('Velocity')
+ylabel('Velocity (m/s)')
+grid on
 
 figure(3)
 plot(magu,y/1000)
 title('Velocity vs Altitude')
-xlabel('Velocity')
+xlabel('Velocity (m/s)')
 ylabel('Altitude (km)')
+grid on
 
 figure(4)
 plot(mach,y/1000)
 title('Mach vs Altitude (normalized to SL)')
 xlabel('Mach')
-ylabel('Altitude')
+ylabel('Altitude (km)')
+grid on
 
 figure(5)
 plot(tplot,m)
 title('Mass vs Time')
-xlabel('Time')
+xlabel('Time (s)')
 ylabel('Mass (kg)')
+grid on
 
 figure(6)
 plot(magu,m)
 title('Mass vs Velocity')
-xlabel('Velocity')
+xlabel('Velocity (m/s)')
 ylabel('Mass (kg)')
+grid on
 
 figure(7)
 plot(tplot,y/1000)
 title('Altitude vs Time')
-xlabel('Time')
+xlabel('Time (s)')
 ylabel('Altitude (km)')
+grid on
 
 figure(8)
 plot(tplot,magu)
 title('Velocity vs Time')
-xlabel('Time')
+xlabel('Time (s)')
 ylabel('Velocity (m/s)')
+grid on
 
 figure(9)
 plot(tplot,phi,tplot,alpha)
 title('Phi vs Time')
-xlabel('Time')
-ylabel('Angle')
+xlabel('Time (s)')
+ylabel('Angle (deg)')
 legend('Phi','Alpha')
+grid on
 
 figure(10)
 plot(tplot,Q)
 title('Dynamic Pressure vs Time')
-xlabel('Time')
-ylabel('Dynamic Pressure')
+xlabel('Time (s)')
+ylabel('Dynamic Pressure (Pa)')
+grid on
 
 figure(11)
 plot(y/1000,Q)
 title('Dynamic Pressure vs. Altitude')
-xlabel('Altitude')
-ylabel('Dynamic Pressure')
+xlabel('Altitude (km)')
+ylabel('Dynamic Pressure (Pa)')
+grid on
 
 figure(12)
 plot(tplot,magacc/g)
 title('Accerlation Normalized to g0')
-xlabel('Time')
+xlabel('Time (s)')
 ylabel('Accelerations (g)')
+grid on
 
 figure(13)
 plot(tplot,mach)
 title('Mach Number vs Time')
-xlabel('Time')
+xlabel('Time (s)')
 ylabel('Mach Number')
+grid on
 
 figure(14)
 plot(tplot,machactual)
 title('Actual Mach')
-xlabel('Time')
+xlabel('Time (s)')
 ylabel('Mach')
-
+grid on
 %% CFD Output
 %This is where the table of values for input into a transient simulation is
 %assembled.

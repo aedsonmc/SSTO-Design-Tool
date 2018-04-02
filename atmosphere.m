@@ -21,6 +21,7 @@
 % - Generate curve fit for Patched Exponential for lower altitudes
 % - (Possibly) Add MSISE-90 data for lower altitudes
 % - (Possibly) Add Jacchia 1970 model
+clear, clc, close all
 
 %% Standard Variables
 % All values are in metric
